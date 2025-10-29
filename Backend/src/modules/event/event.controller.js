@@ -218,7 +218,7 @@ exports.uploadCompletionMaterials = async (req, res, next) => {
  */
 exports.getEventOrganizers = async (req, res, next) => {
   try {
-    const organizers = await svc.getEventOrganizers(req.params.id);
+    const organizers = await svc.getEventOrganizers(req.params.id, req.user);
     successResponse(res, { organizers });
   } catch (err) {
     next(err);

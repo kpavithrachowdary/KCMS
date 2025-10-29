@@ -1168,10 +1168,10 @@ class EventService {
   }
 
   /**
-   * Get club members for an event with their attendance status
-   * Returns ALL members from primary club + participating clubs (whether attendance marked or not)
+   * Get organizers with proper role/type and club filtering
+   * Presidents of participating clubs see ONLY their club members
    */
-  async getEventOrganizers(eventId) {
+  async getEventOrganizers(eventId, userContext = null) {
     const event = await Event.findById(eventId).lean();
     
     if (!event) {
@@ -1180,15 +1180,46 @@ class EventService {
       throw err;
     }
     
-    // Get all club IDs involved
-    const allClubIds = [event.club, ...(event.participatingClubs || [])];
-    
-    // Get ALL club members from involved clubs
     const { Membership } = require('../club/membership.model');
     const { Club } = require('../club/club.model');
     
+    // Determine which clubs the user can view
+    let allowedClubIds = [];
+    
+    if (userContext && userContext.roles?.global !== 'admin') {
+      // Check if user is coordinator
+      const eventClub = await Club.findById(event.club).lean();
+      const isCoordinator = eventClub && eventClub.coordinator.toString() === userContext.id.toString();
+      
+      if (!isCoordinator) {
+        // Find user's leadership positions in involved clubs
+        const userMemberships = await Membership.find({
+          user: userContext.id,
+          club: { $in: [event.club, ...(event.participatingClubs || [])] },
+          status: 'approved',
+          role: { $in: ['president', 'vicePresident', 'core', 'secretary', 'treasurer', 'leadPR', 'leadTech'] }
+        }).lean();
+        
+        if (userMemberships.length === 0) {
+          const err = new Error('You do not have permission to view organizers');
+          err.statusCode = 403;
+          throw err;
+        }
+        
+        // User can only see their own club's members
+        allowedClubIds = userMemberships.map(m => m.club.toString());
+      } else {
+        // Coordinator sees all clubs
+        allowedClubIds = [event.club.toString(), ...(event.participatingClubs || []).map(c => c.toString())];
+      }
+    } else {
+      // Admin or no context - show all
+      allowedClubIds = [event.club.toString(), ...(event.participatingClubs || []).map(c => c.toString())];
+    }
+    
+    // Get members from allowed clubs ONLY
     const clubMembers = await Membership.find({
-      club: { $in: allClubIds },
+      club: { $in: allowedClubIds },
       status: 'approved'
     })
     .populate('user', 'profile.name email rollNumber')
@@ -1207,20 +1238,30 @@ class EventService {
       attendanceMap[att.user.toString()] = att.status;
     });
     
-    // Build member list grouped by club
+    // Build member list grouped by club with role and type
     const membersByClub = {};
     
     clubMembers.forEach(membership => {
-      if (!membership.user) return; // Skip if user not populated
+      if (!membership.user) return;
       
       const clubId = membership.club._id.toString();
       const clubName = membership.club.name;
       const userId = membership.user._id.toString();
+      const isPrimaryClub = clubId === event.club.toString();
+      
+      // Determine member type
+      const isLeadership = ['president', 'vicePresident'].includes(membership.role);
+      const isCoreTeam = ['core', 'secretary', 'treasurer', 'leadPR', 'leadTech'].includes(membership.role);
+      let memberType = 'volunteer';
+      if (isPrimaryClub && (isLeadership || isCoreTeam)) {
+        memberType = 'organizer';
+      }
       
       if (!membersByClub[clubId]) {
         membersByClub[clubId] = {
           clubId,
           clubName,
+          isPrimaryClub,
           members: []
         };
       }
@@ -1230,15 +1271,35 @@ class EventService {
         name: membership.user.profile?.name || 'Unknown',
         email: membership.user.email,
         rollNumber: membership.user.rollNumber,
-        attendanceStatus: attendanceMap[userId] || 'rsvp' // Default to 'rsvp' if not marked
+        role: membership.role,
+        type: memberType,
+        attendanceStatus: attendanceMap[userId] || 'pending'
       });
     });
     
-    // Convert to array and sort
-    return Object.values(membersByClub).map(group => {
-      group.members.sort((a, b) => a.name.localeCompare(b.name));
+    // Convert to array and sort by role hierarchy
+    const result = Object.values(membersByClub).map(group => {
+      group.members.sort((a, b) => {
+        const roleOrder = {
+          'president': 1, 'vicePresident': 2, 'secretary': 3,
+          'treasurer': 4, 'leadPR': 5, 'leadTech': 6, 'core': 7, 'member': 8
+        };
+        const roleA = roleOrder[a.role] || 9;
+        const roleB = roleOrder[b.role] || 9;
+        if (roleA !== roleB) return roleA - roleB;
+        return a.name.localeCompare(b.name);
+      });
       return group;
     });
+    
+    // Primary club first
+    result.sort((a, b) => {
+      if (a.isPrimaryClub && !b.isPrimaryClub) return -1;
+      if (!a.isPrimaryClub && b.isPrimaryClub) return 1;
+      return a.clubName.localeCompare(b.clubName);
+    });
+    
+    return result;
   }
 
   /**

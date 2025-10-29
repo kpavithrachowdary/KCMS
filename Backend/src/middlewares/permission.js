@@ -371,10 +371,26 @@ exports.requireAssignedCoordinatorOrClubRoleForEvent = (clubRoles = []) => {
       }
 
       // Check club roles via Membership collection
+      // ✅ FIX: Check BOTH primary club AND participating clubs
       if (clubRoles.length > 0) {
+        // Check primary club
         const hasClubRole = await hasClubMembership(req.user.id, event.club._id.toString(), clubRoles);
         if (hasClubRole) {
           return next();
+        }
+        
+        // ✅ NEW: Check participating clubs
+        if (event.participatingClubs && event.participatingClubs.length > 0) {
+          for (const participatingClubId of event.participatingClubs) {
+            const hasParticipatingClubRole = await hasClubMembership(
+              req.user.id, 
+              participatingClubId.toString(), 
+              clubRoles
+            );
+            if (hasParticipatingClubRole) {
+              return next();
+            }
+          }
         }
       }
 

@@ -40,9 +40,11 @@ const OrganizerAttendancePage = () => {
               _id: member.userId,
               name: member.name,
               email: member.email,
-              rollNumber: member.rollNumber
+              rollNumber: member.rollNumber,
+              clubRole: member.role // ✅ FIX: Include role from backend
             },
             clubName: group.clubName,
+            type: member.type, // ✅ FIX: Include type from backend
             attendance: {
               status: member.attendanceStatus
             }
@@ -183,6 +185,7 @@ const OrganizerAttendancePage = () => {
               <thead>
                 <tr>
                   <th>Member</th>
+                  <th>Club</th>
                   <th>Role</th>
                   <th>Type</th>
                   <th>Status</th>
@@ -203,7 +206,18 @@ const OrganizerAttendancePage = () => {
                         </div>
                       </td>
                       <td>
-                        <span className="role-badge">{user.clubRole || 'Member'}</span>
+                        <span className="club-badge">{organizer.clubName || 'Unknown'}</span>
+                      </td>
+                      <td>
+                        <span className="role-badge">
+                          {user.clubRole === 'president' ? '👑 President' :
+                           user.clubRole === 'vicePresident' ? '🎖️ Vice President' :
+                           user.clubRole === 'secretary' ? '📝 Secretary' :
+                           user.clubRole === 'treasurer' ? '💰 Treasurer' :
+                           user.clubRole === 'leadPR' ? '📢 Lead PR' :
+                           user.clubRole === 'leadTech' ? '💻 Lead Tech' :
+                           user.clubRole === 'core' ? '⭐ Core' : '👤 Member'}
+                        </span>
                       </td>
                       <td>
                         <span className={`type-badge type-${organizer.type}`}>
