@@ -172,18 +172,33 @@ class UserService {
   // 4) List users with filters & pagination (Admin sees all, others see students only)
   async listUsers(filters, page = 1, limit = 20, userContext = null) {
     const query = {};
-    if (filters.name)       query['profile.name']    = new RegExp(filters.name, 'i');
-    if (filters.rollNumber) query.rollNumber         = filters.rollNumber;
-    if (filters.email)      query.email              = filters.email;
+    
+    // General search across name, email, and rollNumber
+    if (filters.search) {
+      const searchRegex = new RegExp(filters.search, 'i');
+      query.$or = [
+        { 'profile.name': searchRegex },
+        { email: searchRegex },
+        { rollNumber: searchRegex }
+      ];
+    }
+    
+    // Specific field filters (only applied if search is not used)
+    if (!filters.search) {
+      if (filters.name)       query['profile.name']    = new RegExp(filters.name, 'i');
+      if (filters.rollNumber) query.rollNumber         = filters.rollNumber;
+      if (filters.email)      query.email              = filters.email;
+    }
+    
     if (filters.department) query['profile.department'] = filters.department;
     if (filters.role)       query['roles.global']    = filters.role;
     if (filters.status)     query.status             = filters.status;
 
-    // ✅ Non-admins can only see students (for adding to clubs)
+    // Non-admins can only see students (for adding to clubs)
     if (userContext && userContext.roles?.global !== 'admin') {
       query['roles.global'] = 'student';
     }
-
+    
     const skip = (page - 1) * limit;
     const [total, users] = await Promise.all([
       User.countDocuments(query),

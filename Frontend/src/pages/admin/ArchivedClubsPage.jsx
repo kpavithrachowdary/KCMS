@@ -141,8 +141,9 @@ const ArchivedClubsPage = () => {
                 <div className="club-card-actions">
                   <button
                     onClick={() => handleRestoreClub(club._id, club.name)}
-                    className="btn btn-success btn-sm"
+                    className="btn btn-success"
                     disabled={restoring === club._id}
+                    style={{ width: '100%' }}
                   >
                     {restoring === club._id ? (
                       <>
@@ -151,15 +152,6 @@ const ArchivedClubsPage = () => {
                     ) : (
                       <>🔄 Restore Club</>
                     )}
-                  </button>
-                  <button
-                    className="btn btn-outline btn-sm"
-                    onClick={() => {
-                      // View details in read-only mode
-                      alert('View details feature coming soon');
-                    }}
-                  >
-                    👁️ View Details
                   </button>
                 </div>
 

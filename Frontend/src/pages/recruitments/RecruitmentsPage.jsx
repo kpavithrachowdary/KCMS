@@ -146,7 +146,7 @@ const RecruitmentsPage = () => {
                     <Link to={`/recruitments/${recruitment._id}`} className="btn btn-outline">
                       View Details
                     </Link>
-                    {isOpen && (
+                    {isOpen && user?.roles?.global === 'student' && (
                       <Link to={`/recruitments/${recruitment._id}`} className="btn btn-primary">
                         Apply Now
                       </Link>

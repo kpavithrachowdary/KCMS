@@ -174,9 +174,12 @@ const MemberAnalyticsPage = () => {
               className="search-input"
             />
             
-            <button onClick={handleExport} className="btn-export">
-              📥 Export CSV
-            </button>
+            {/* Export CSV - Only for Coordinators and Admins */}
+            {(user?.roles?.global === 'coordinator' || user?.roles?.global === 'admin') && (
+              <button onClick={handleExport} className="btn-export">
+                📅 Export CSV
+              </button>
+            )}
           </div>
         </div>
 

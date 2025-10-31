@@ -371,7 +371,7 @@ const RecruitmentDetailPage = () => {
             </div>
           )}
 
-          {isOpen && !canManage && !hasApplied && (
+          {isOpen && !canManage && !hasApplied && user?.roles?.global === 'student' && (
             <div className="application-form-section">
               <h2>Apply Now</h2>
               

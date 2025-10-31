@@ -1,13 +1,135 @@
 const { Notification }     = require('./notification.model');
 const notificationQueue    = require('../../queues/notification.queue');
 
+/**
+ * Generate title and message based on notification type and payload
+ */
+function generateNotificationContent(type, payload = {}) {
+  const templates = {
+    // Recruitment notifications
+    recruitment_created: {
+      title: 'New Recruitment Started',
+      message: `${payload.clubName || 'A club'} has started recruiting new members!`
+    },
+    recruitment_opened: {
+      title: 'Recruitment Now Open',
+      message: `Applications are now open for ${payload.clubName || 'club recruitment'}`
+    },
+    recruitment_closed: {
+      title: 'Recruitment Closed',
+      message: `Recruitment for ${payload.clubName || 'the club'} has closed`
+    },
+    application_received: {
+      title: 'Application Received',
+      message: `Your application to ${payload.clubName || 'the club'} has been received`
+    },
+    application_approved: {
+      title: 'Application Approved! 🎉',
+      message: `Congratulations! You've been accepted to ${payload.clubName || 'the club'}`
+    },
+    application_rejected: {
+      title: 'Application Update',
+      message: `Your application to ${payload.clubName || 'the club'} was not successful this time`
+    },
+    
+    // Event notifications
+    event_created: {
+      title: 'New Event Created',
+      message: `${payload.eventTitle || 'An event'} has been created by ${payload.clubName || 'a club'}`
+    },
+    event_published: {
+      title: 'Event Published',
+      message: `${payload.eventTitle || 'Event'} is now live! Check it out`
+    },
+    event_updated: {
+      title: 'Event Updated',
+      message: `${payload.eventTitle || 'An event'} has been updated`
+    },
+    event_cancelled: {
+      title: 'Event Cancelled',
+      message: `${payload.eventTitle || 'Event'} has been cancelled`
+    },
+    event_reminder: {
+      title: 'Event Reminder',
+      message: `${payload.eventTitle || 'Event'} is coming up soon!`
+    },
+    
+    // Role notifications
+    role_assigned: {
+      title: 'New Role Assigned',
+      message: `You've been assigned as ${payload.role || 'member'} in ${payload.clubName || 'a club'}`
+    },
+    role_removed: {
+      title: 'Role Removed',
+      message: `Your role in ${payload.clubName || 'the club'} has been updated`
+    },
+    
+    // Club notifications
+    club_created: {
+      title: 'New Club Created',
+      message: `${payload.clubName || 'A new club'} has been created`
+    },
+    club_approved: {
+      title: 'Club Approved',
+      message: `${payload.clubName || 'Your club'} has been approved!`
+    },
+    member_joined: {
+      title: 'New Member',
+      message: `${payload.memberName || 'Someone'} joined ${payload.clubName || 'your club'}`
+    },
+    member_left: {
+      title: 'Member Left',
+      message: `${payload.memberName || 'A member'} left ${payload.clubName || 'your club'}`
+    },
+    
+    // Registration notifications
+    registration_approved: {
+      title: 'Registration Approved',
+      message: `Your registration for ${payload.eventTitle || 'the event'} has been approved`
+    },
+    registration_rejected: {
+      title: 'Registration Update',
+      message: `Your registration for ${payload.eventTitle || 'the event'} was not approved`
+    },
+    performer_registration: {
+      title: 'New Performance Registration',
+      message: `New registration received for ${payload.eventTitle || 'event'}`
+    },
+    performer_approved: {
+      title: 'Performance Approved! 🎭',
+      message: `Your performance for ${payload.eventTitle || 'the event'} has been approved`
+    },
+    performer_rejected: {
+      title: 'Performance Update',
+      message: `Your performance registration for ${payload.eventTitle || 'the event'} was not approved`
+    },
+    
+    // System notifications
+    system: {
+      title: 'System Notification',
+      message: payload.message || 'You have a new notification'
+    },
+    announcement: {
+      title: payload.title || 'Announcement',
+      message: payload.message || 'New announcement from KMIT Clubs Hub'
+    }
+  };
+  
+  const template = templates[type] || {
+    title: type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+    message: payload.message || 'You have a new notification'
+  };
+  
+  return template;
+}
+
 class NotificationService {
   /**
    * Create & enqueue a notification.
    * Includes deduplication to prevent duplicate notifications within 1 hour.
-   * @param {Object} opts: { user, type, payload, priority }
+   * @param {Object} opts: { user, type, payload, priority, title, message }
    */
-  async create({ user, type, payload = {}, priority = 'MEDIUM' }) {
+  async create({ user, type, payload = {}, priority = 'MEDIUM', title, message }) {
     // Deduplication: Check for similar notification created in last hour
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
     
@@ -25,8 +147,20 @@ class NotificationService {
       return existingNotif;
     }
 
-    // Create new notification
-    const notif = await Notification.create({ user, type, payload, priority });
+    // Generate title and message if not provided
+    const content = generateNotificationContent(type, payload);
+    const finalTitle = title || content.title;
+    const finalMessage = message || content.message;
+
+    // Create new notification with proper title and message
+    const notif = await Notification.create({ 
+      user, 
+      type, 
+      payload, 
+      priority,
+      title: finalTitle,
+      message: finalMessage
+    });
     if (!notificationQueue || typeof notificationQueue.add !== 'function') {
       console.error('notificationQueue is not properly initialized:', notificationQueue);
       throw new Error('Notification queue is not available');

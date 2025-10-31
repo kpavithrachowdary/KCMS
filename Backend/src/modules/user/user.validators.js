@@ -42,6 +42,7 @@ module.exports = {
   listUsersSchema: Joi.object({
     page: Joi.number().integer().min(1).default(1),
     limit: Joi.number().integer().min(1).max(100).default(20),
+    search: Joi.string().allow(''), // General search across name, email, rollNumber
     name: Joi.string().allow(''),
     rollNumber: Joi.string().allow(''),
     email: Joi.string().email().allow(''),

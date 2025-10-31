@@ -173,28 +173,6 @@ exports.settleBudget = async (req, res, next) => {
 };
 
 /**
- * Coordinator Financial Override
- * Allows coordinator to reject/reduce budget with reason
- */
-exports.coordinatorOverrideBudget = async (req, res, next) => {
-  try {
-    const event = await svc.coordinatorOverrideBudget(
-      req.params.id,
-      req.body,
-      { 
-        id: req.user.id, 
-        name: req.user.profile?.name,
-        ip: req.ip, 
-        userAgent: req.headers['user-agent'] 
-      }
-    );
-    successResponse(res, { event }, 'Financial override applied');
-  } catch (err) {
-    next(err);
-  }
-};
-
-/**
  * Upload Completion Materials
  * Handles photos, report, attendance, bills for pending_completion events
  */

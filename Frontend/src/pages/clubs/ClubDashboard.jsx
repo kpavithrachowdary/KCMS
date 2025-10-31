@@ -375,13 +375,15 @@ const ClubDashboard = () => {
               </Link>
             )}
             <Link to={`/clubs/${clubId}`} className="btn btn-outline">
-              👁️ View Public Page
+              View Public Page
             </Link>
-            {/* 📊 Export Activity CSV (Workplan Gap Fix) */}
-            <button onClick={handleExportActivity} className="btn btn-outline">
-              📥 Export Activity (CSV)
-            </button>
-            {/* ✅ Coordinator Approval Buttons for Archive Request */}
+            {/* Export Activity CSV - Only for Coordinators and Admins */}
+            {(user?.roles?.global === 'coordinator' || user?.roles?.global === 'admin') && (
+              <button onClick={handleExportActivity} className="btn btn-outline">
+                Export Activity (CSV)
+              </button>
+            )}
+            {/* Coordinator Approval Buttons for Archive Request */}
             {user?.roles?.global === 'coordinator' && club.status === 'pending_archive' && (
               <>
                 <button 
@@ -481,14 +483,6 @@ const ClubDashboard = () => {
               <h3>Manage Members</h3>
               <p>View and manage members</p>
             </button>
-            <button 
-              onClick={() => setActiveTab('documents')} 
-              className="action-card action-warning"
-            >
-              <span className="action-icon">📄</span>
-              <h3>Documents</h3>
-              <p>Upload and manage docs</p>
-            </button>
           </div>
         </div>
 
@@ -518,12 +512,12 @@ const ClubDashboard = () => {
           >
             Members ({stats.totalMembers})
           </button>
-          <button
+          {/* <button
             className={`tab ${activeTab === 'documents' ? 'active' : ''}`}
             onClick={() => setActiveTab('documents')}
           >
             Documents
-          </button>
+          </button> */}
         </div>
 
         {/* Tab Content */}
@@ -866,26 +860,6 @@ const ClubDashboard = () => {
                     </div>
                   ) : null)
                 )}
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'documents' && (
-            <div className="documents-section">
-              <div className="section-header">
-                <h2>Club Documents</h2>
-                <button className="btn btn-primary">+ Upload Document</button>
-              </div>
-              <div className="info-card">
-                <p className="text-muted">Document management feature coming soon...</p>
-                <p>You'll be able to upload and manage:</p>
-                <ul>
-                  <li>Meeting minutes</li>
-                  <li>Event reports</li>
-                  <li>Budget documents</li>
-                  <li>Member lists</li>
-                  <li>Certificates and achievements</li>
-                </ul>
               </div>
             </div>
           )}

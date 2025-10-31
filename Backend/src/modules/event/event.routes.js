@@ -125,20 +125,10 @@ router.get(
 router.post(
   '/:id/budget/settle',
   authenticate,
-  requireEither(['admin'], LEADERSHIP_ROLES), // ✅ Admin OR Leadership (President/Vice President)
+  requireEither(['admin'], LEADERSHIP_ROLES), // Admin OR Leadership (President/Vice President)
   validate(v.eventId, 'params'),
   validate(v.settleBudget),
   ctrl.settleBudget
-);
-
-// Coordinator Financial Override (Coordinator can override budget decisions - Section 2.1)
-router.post(
-  '/:id/financial-override',
-  authenticate,
-  requireAssignedCoordinatorOrClubRoleForEvent([]), // ✅ Only assigned coordinator (or admin)
-  validate(v.eventId, 'params'),
-  validate(v.financialOverride),
-  ctrl.coordinatorOverrideBudget
 );
 
 // Upload Completion Materials (Photos, Report, Attendance, Bills)

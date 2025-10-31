@@ -137,31 +137,6 @@ const EventDetailPage = () => {
     }
   };
 
-  // Financial Override Handler (NEW - Coordinator only)
-  const handleFinancialOverride = async () => {
-    const reason = prompt('Enter reason for financial override:');
-    if (!reason || reason.trim() === '') {
-      alert('Override reason is required');
-      return;
-    }
-
-    if (!window.confirm(`Apply financial override for this event?\n\nReason: ${reason}\n\nThis will override budget restrictions.`)) {
-      return;
-    }
-
-    try {
-      await eventService.financialOverride(id, { 
-        reason: reason.trim(),
-        approved: true 
-      });
-      alert('✅ Financial override applied successfully!');
-      fetchEventDetails();
-    } catch (error) {
-      console.error('Financial override error:', error);
-      const errorMsg = error.response?.data?.message || error.message || 'Failed to apply financial override';
-      alert(`❌ ${errorMsg}`);
-    }
-  };
 
   if (loading) {
     return (
@@ -332,8 +307,8 @@ const EventDetailPage = () => {
             </div>
 
             <div className="event-actions">
-              {/* ✅ NEW: Event Registration for all users (students including club members) */}
-              {isPublished && !event.hasRegistered && (
+              {/* ✅ Event Registration - Only for students */}
+              {isPublished && !event.hasRegistered && user?.roles?.global === 'student' && (
                 <button 
                   onClick={() => navigate(`/events/${id}/register`)}
                   className="btn btn-primary"
@@ -343,7 +318,7 @@ const EventDetailPage = () => {
               )}
               
               {/* ✅ Show "Already Registered" if user has registered */}
-              {isPublished && event.hasRegistered && (
+              {isPublished && event.hasRegistered && user?.roles?.global === 'student' && (
                 <button 
                   className="btn btn-success"
                   disabled
@@ -387,17 +362,6 @@ const EventDetailPage = () => {
                 </button>
               )}
 
-              {/* Coordinator Financial Override (NEW) - Only in pending_coordinator status */}
-              {isCoordinatorForClub && event?.status === 'pending_coordinator' && (
-                <button 
-                  onClick={handleFinancialOverride}
-                  className="btn btn-warning"
-                  title="Override budget restrictions (allows events >5000 or with guest speakers)"
-                >
-                  💰 Financial Override
-                </button>
-              )}
-              
               
               {user?.roles?.global === 'admin' && event?.status === 'pending_admin' && (
                 <button 

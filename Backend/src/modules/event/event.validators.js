@@ -116,11 +116,5 @@ module.exports = {
   settleBudget: Joi.object({
     reportUrl: Joi.string().uri().required(),
     unusedFunds: Joi.number().min(0).optional()
-  }),
-
-  financialOverride: Joi.object({
-    action: Joi.string().valid('budget_rejection', 'budget_reduction', 'event_cancellation').required(),
-    reason: Joi.string().min(10).max(500).required(),
-    adjustedBudget: Joi.number().min(0).optional() // Required only for budget_reduction
   })
 };

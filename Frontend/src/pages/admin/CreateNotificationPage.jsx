@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Layout from '../../components/Layout';
 import notificationService from '../../services/notificationService';
+import '../../styles/CreateNotification.css';
 
 /**
  * Create Notification Page (Admin Only)
@@ -101,255 +103,230 @@ const CreateNotificationPage = () => {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-4xl">📤</span>
+      <Layout>
+        <div className="success-container">
+          <div className="success-card">
+            <div className="success-icon">
+              <span>📤</span>
+            </div>
+            <h2>Notification Sent!</h2>
+            <p className="success-message">
+              The notification has been created and sent to targeted users.
+            </p>
+            <p className="redirect-message">
+              Redirecting...
+            </p>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Notification Sent!
-          </h2>
-          <p className="text-gray-600 mb-6">
-            The notification has been created and sent to targeted users.
-          </p>
-          <p className="text-sm text-gray-500">
-            Redirecting...
-          </p>
         </div>
-      </div>
+      </Layout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <button
-            onClick={() => navigate(-1)}
-            className="text-blue-600 hover:text-blue-700 mb-4 flex items-center"
-          >
-            ← Back
-          </button>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Create System Notification
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Send notifications to users across the system
-          </p>
-        </div>
-
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-            <p className="text-red-800">{error}</p>
-          </div>
-        )}
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-lg p-6 space-y-6">
-          {/* Notification Type */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Notification Type
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {notificationTypes.map((type) => (
-                <button
-                  key={type.value}
-                  type="button"
-                  onClick={() => setFormData(prev => ({ ...prev, type: type.value }))}
-                  className={`p-3 border-2 rounded-lg flex flex-col items-center justify-center transition-colors ${
-                    formData.type === type.value
-                      ? 'border-blue-600 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <span className="text-2xl mb-1">{type.icon}</span>
-                  <span className="text-sm font-medium">{type.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Priority */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Priority
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {priorities.map((priority) => (
-                <button
-                  key={priority.value}
-                  type="button"
-                  onClick={() => setFormData(prev => ({ ...prev, priority: priority.value }))}
-                  className={`p-3 border-2 rounded-lg font-medium transition-colors ${
-                    formData.priority === priority.value
-                      ? 'border-blue-600 ' + priority.color
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  {priority.label}
-                </button>
-              ))}
-            </div>
-            <p className="text-xs text-gray-500 mt-2">
-              URGENT notifications cannot be unsubscribed from
+    <Layout>
+      <div className="create-notification-page">
+        <div className="page-container">
+          {/* Header */}
+          <div className="page-header">
+            <button onClick={() => navigate(-1)} className="back-btn">
+              ← Back
+            </button>
+            <h1>Create System Notification</h1>
+            <p className="page-subtitle">
+              Send notifications to users across the system
             </p>
           </div>
 
-          {/* Title */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Title *
-            </label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              required
-              placeholder="Enter notification title"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          {/* Message */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Message *
-            </label>
-            <textarea
-              name="message"
-              value={formData.message}
-              onChange={handleChange}
-              required
-              rows="4"
-              placeholder="Enter notification message"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          {/* Target Audience */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Target Audience
-            </label>
-            <select
-              name="targetUsers"
-              value={formData.targetUsers}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              {targetAudiences.map((audience) => (
-                <option key={audience.value} value={audience.value}>
-                  {audience.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Specific Users (if selected) */}
-          {formData.targetUsers === 'specific' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                User IDs (comma-separated)
-              </label>
-              <input
-                type="text"
-                name="specificUsers"
-                value={formData.specificUsers}
-                onChange={handleChange}
-                placeholder="e.g., 507f1f77bcf86cd799439011, 507f191e810c19729de860ea"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Enter MongoDB ObjectIds separated by commas
-              </p>
+          {/* Error Message */}
+          {error && (
+            <div className="error-alert">
+              <p>{error}</p>
             </div>
           )}
 
-          {/* Link (Optional) */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Action Link (Optional)
-            </label>
-            <input
-              type="text"
-              name="link"
-              value={formData.link}
-              onChange={handleChange}
-              placeholder="/events/123 or https://example.com"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Users will be redirected to this URL when clicking the notification
-            </p>
-          </div>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="notification-form">
+            {/* Notification Type */}
+            <div className="form-group">
+              <label className="form-label">Notification Type</label>
+              <div className="type-grid">
+                {notificationTypes.map((type) => (
+                  <button
+                    key={type.value}
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, type: type.value }))}
+                    className={`type-btn ${formData.type === type.value ? 'active' : ''}`}
+                  >
+                    <span className="type-icon">{type.icon}</span>
+                    <span className="type-label">{type.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
 
-          {/* Expiration (Optional) */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Expires At (Optional)
-            </label>
-            <input
-              type="datetime-local"
-              name="expiresAt"
-              value={formData.expiresAt}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Notification will be automatically removed after this date
-            </p>
-          </div>
+            {/* Priority */}
+            <div className="form-group">
+              <label className="form-label">Priority</label>
+              <div className="priority-grid">
+                {priorities.map((priority) => (
+                  <button
+                    key={priority.value}
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, priority: priority.value }))}
+                    className={`priority-btn priority-${priority.value.toLowerCase()} ${
+                      formData.priority === priority.value ? 'active' : ''
+                    }`}
+                  >
+                    {priority.label}
+                  </button>
+                ))}
+              </div>
+              <p className="form-hint">
+                URGENT notifications cannot be unsubscribed from
+              </p>
+            </div>
 
-          {/* Submit Button */}
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-            >
-              {loading ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  Sending...
-                </>
-              ) : (
-                <>
-                  <span className="mr-2">📤</span>
-                  Send Notification
-                </>
-              )}
-            </button>
-          </div>
-        </form>
+            {/* Title */}
+            <div className="form-group">
+              <label className="form-label">Title *</label>
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                required
+                placeholder="Enter notification title"
+                className="form-input"
+              />
+            </div>
 
-        {/* Info Box */}
-        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-start">
-            <span className="text-xl mr-3">🔔</span>
-            <div className="text-sm text-blue-800">
-              <p className="font-medium mb-1">About System Notifications</p>
-              <ul className="list-disc list-inside space-y-1">
-                <li>Notifications are sent immediately to all targeted users</li>
-                <li>Users will receive in-app and email notifications</li>
-                <li>URGENT notifications cannot be unsubscribed from</li>
-                <li>Non-URGENT notifications respect user preferences</li>
-              </ul>
+            {/* Message */}
+            <div className="form-group">
+              <label className="form-label">Message *</label>
+              <textarea
+                name="message"
+                value={formData.message}
+                onChange={handleChange}
+                required
+                rows="4"
+                placeholder="Enter notification message"
+                className="form-textarea"
+              />
+            </div>
+
+            {/* Target Audience */}
+            <div className="form-group">
+              <label className="form-label">Target Audience</label>
+              <select
+                name="targetUsers"
+                value={formData.targetUsers}
+                onChange={handleChange}
+                className="form-select"
+              >
+                {targetAudiences.map((audience) => (
+                  <option key={audience.value} value={audience.value}>
+                    {audience.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Specific Users (if selected) */}
+            {formData.targetUsers === 'specific' && (
+              <div className="form-group">
+                <label className="form-label">User IDs (comma-separated)</label>
+                <input
+                  type="text"
+                  name="specificUsers"
+                  value={formData.specificUsers}
+                  onChange={handleChange}
+                  placeholder="e.g., 507f1f77bcf86cd799439011, 507f191e810c19729de860ea"
+                  className="form-input"
+                />
+                <p className="form-hint">
+                  Enter MongoDB ObjectIds separated by commas
+                </p>
+              </div>
+            )}
+
+            {/* Link (Optional) */}
+            <div className="form-group">
+              <label className="form-label">Action Link (Optional)</label>
+              <input
+                type="text"
+                name="link"
+                value={formData.link}
+                onChange={handleChange}
+                placeholder="/events/123 or https://example.com"
+                className="form-input"
+              />
+              <p className="form-hint">
+                Users will be redirected to this URL when clicking the notification
+              </p>
+            </div>
+
+            {/* Expiration (Optional) */}
+            <div className="form-group">
+              <label className="form-label">Expires At (Optional)</label>
+              <input
+                type="datetime-local"
+                name="expiresAt"
+                value={formData.expiresAt}
+                onChange={handleChange}
+                className="form-input"
+              />
+              <p className="form-hint">
+                Notification will be automatically removed after this date
+              </p>
+            </div>
+
+            {/* Submit Button */}
+            <div className="form-actions">
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                className="btn btn-secondary"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn btn-primary"
+              >
+                {loading ? (
+                  <>
+                    <span className="spinner"></span>
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <span>📤</span>
+                    Send Notification
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+
+          {/* Info Box */}
+          <div className="info-box">
+            <div className="info-content">
+              <span className="info-icon">🔔</span>
+              <div className="info-text">
+                <p className="info-title">About System Notifications</p>
+                <ul>
+                  <li>Notifications are sent immediately to all targeted users</li>
+                  <li>Users will receive in-app and email notifications</li>
+                  <li>URGENT notifications cannot be unsubscribed from</li>
+                  <li>Non-URGENT notifications respect user preferences</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 

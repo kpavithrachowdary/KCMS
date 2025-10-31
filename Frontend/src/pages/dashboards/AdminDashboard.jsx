@@ -171,16 +171,7 @@ const AdminDashboard = () => {
               <h3>System Settings</h3>
               <p>Configure global parameters</p>
             </Link>
-            <Link to="/admin/audit-logs" className="action-card action-info">
-              <span className="action-icon">📋</span>
-              <h3>Audit Logs</h3>
-              <p>View system activity logs</p>
-            </Link>
-            <Link to="/admin/notifications/create" className="action-card action-warning">
-              <span className="action-icon">🔔</span>
-              <h3>Create Notification</h3>
-              <p>Send system-wide notifications</p>
-            </Link>
+    
             <Link to="/reports" className="action-card action-success">
               <span className="action-icon">📊</span>
               <h3>Reports</h3>
