@@ -104,18 +104,19 @@ async function start() {
 
   server = http.createServer(app);
 
-  server.listen(PORT, () => {
-    console.log('\n🚀 Server started successfully!');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log(`📡 Server listening on port: ${PORT}`);
-    console.log(`🌍 Environment: ${config.NODE_ENV}`);
-    console.log(`💾 MongoDB: Connected (${mongoose.connection.name})`);
-    console.log(`🔴 Redis: Connected`);
-    console.log(`📧 SMTP: ${config.SMTP_HOST ? 'Configured' : 'Not configured'}`);
-    console.log(`⚙️  Queue Schedulers: ${config.START_SCHEDULERS ? 'Running' : 'Disabled'}`);
-    console.log(`📬 Notification Batching: ${config.START_NOTIFICATION_BATCH ? 'Running' : 'Disabled'}`);
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
-  });
+server.listen(PORT, '0.0.0.0', () => {
+  console.log('\n🚀 Server started successfully!');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log(`📡 Server listening on port: ${PORT} (0.0.0.0)`);
+  console.log(`🌍 Environment: ${config.NODE_ENV}`);
+  console.log(`💾 MongoDB: Connected (${mongoose.connection.name})`);
+  console.log(`🔴 Redis: Connected`);
+  console.log(`📧 SMTP: ${config.SMTP_HOST ? 'Configured' : 'Not configured'}`);
+  console.log(`⚙️  Queue Schedulers: ${config.START_SCHEDULERS ? 'Running' : 'Disabled'}`);
+  console.log(`📬 Notification Batching: ${config.START_NOTIFICATION_BATCH ? 'Running' : 'Disabled'}`);
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+});
+
 }
 
 // Graceful shutdown
