@@ -17,6 +17,12 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: process.env.PORT || 3000,
+    allowedHosts: [
+      'kcms-ma5d.onrender.com',
+      '.onrender.com', // This allows any subdomain of onrender.com
+      'localhost'
+    ],
+
     proxy: {
       '/api': {
         target: 'http://localhost:5000',
