@@ -104,7 +104,7 @@ async function start() {
 
   server = http.createServer(app);
 
-server.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, () => {
   console.log('\n🚀 Server started successfully!');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.log(`📡 Server listening on port: ${PORT} (0.0.0.0)`);
