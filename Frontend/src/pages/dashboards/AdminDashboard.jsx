@@ -105,7 +105,7 @@ const AdminDashboard = () => {
       <div className="dashboard">
         <div className="dashboard-header">
           <div>
-            <h1>Admin Dashboard 👨‍💼</h1>
+            <h1>Admin Dashboard <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{verticalAlign: 'middle', display: 'inline'}}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></h1>
             <p>Manage clubs, events, and users</p>
           </div>
         </div>
@@ -113,28 +113,28 @@ const AdminDashboard = () => {
         {/* Stats Cards */}
         <div className="stats-grid">
           <div className="stat-card stat-primary">
-            <div className="stat-icon">🏢</div>
+            <div className="stat-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/></svg></div>
             <div className="stat-content">
               <h3>{stats.totalClubs}</h3>
               <p>Total Clubs</p>
             </div>
           </div>
           <div className="stat-card stat-success">
-            <div className="stat-icon">📅</div>
+            <div className="stat-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
             <div className="stat-content">
               <h3>{stats.totalEvents}</h3>
               <p>Total Events</p>
             </div>
           </div>
           <div className="stat-card stat-info">
-            <div className="stat-icon">👥</div>
+            <div className="stat-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
             <div className="stat-content">
               <h3>{stats.totalUsers}</h3>
               <p>Total Users</p>
             </div>
           </div>
           <div className="stat-card stat-warning">
-            <div className="stat-icon">⏳</div>
+            <div className="stat-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
             <div className="stat-content">
               <h3>{stats.pendingApprovals}</h3>
               <p>Pending Approvals</p>
@@ -147,38 +147,38 @@ const AdminDashboard = () => {
           <h2>Admin Actions</h2>
           <div className="actions-grid">
             <Link to="/clubs/create" className="action-card action-primary">
-              <span className="action-icon">➕</span>
+              <span className="action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
               <h3>Create Club</h3>
               <p>Add a new club to the system</p>
             </Link>
             <Link to="/admin/users" className="action-card action-info">
-              <span className="action-icon">👥</span>
+              <span className="action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
               <h3>Manage Users</h3>
               <p>View and manage all users</p>
             </Link>
             <Link to="/clubs" className="action-card action-success">
-              <span className="action-icon">🏢</span>
+              <span className="action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/></svg></span>
               <h3>Manage Clubs</h3>
               <p>View and approve clubs</p>
             </Link>
             <Link to="/events" className="action-card action-warning">
-              <span className="action-icon">📅</span>
+              <span className="action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
               <h3>Manage Events</h3>
               <p>Approve and monitor events</p>
             </Link>
             <Link to="/admin/settings" className="action-card action-primary">
-              <span className="action-icon">⚙️</span>
+              <span className="action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m9-9h-6m-6 0H3m15.364 6.364l-4.243-4.243m-6.364 0l-4.243 4.243m12.728 0l-4.243-4.243m-6.364 0l-4.243 4.243"/></svg></span>
               <h3>System Settings</h3>
               <p>Configure global parameters</p>
             </Link>
     
             <Link to="/reports" className="action-card action-success">
-              <span className="action-icon">📊</span>
+              <span className="action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
               <h3>Reports</h3>
               <p>Generate NAAC/NBA reports</p>
             </Link>
             <Link to="/admin/archived-clubs" className="action-card action-warning">
-              <span className="action-icon">🗄️</span>
+              <span className="action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg></span>
               <h3>Archived Clubs</h3>
               <p>View and restore archived clubs</p>
             </Link>
@@ -189,7 +189,7 @@ const AdminDashboard = () => {
         {pendingEvents.length > 0 && (
           <div className="dashboard-section">
             <div className="section-header">
-              <h2>⏳ Pending Admin Approvals</h2>
+              <h2><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{verticalAlign: 'middle', marginRight: '8px'}}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Pending Admin Approvals</h2>
               <Link to="/events" className="view-all">View All →</Link>
             </div>
             <div className="table-container">
@@ -229,13 +229,13 @@ const AdminDashboard = () => {
                               onClick={() => handleApproveEvent(event._id)}
                               className="btn btn-sm btn-success"
                             >
-                              ✓ Approve
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{verticalAlign: 'middle', marginRight: '4px'}}><polyline points="20 6 9 17 4 12"/></svg>Approve
                             </button>
                             <button 
                               onClick={() => handleRejectEvent(event._id)}
                               className="btn btn-sm btn-danger"
                             >
-                              ✗ Reject
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{verticalAlign: 'middle', marginRight: '4px'}}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Reject
                             </button>
                           </div>
                         </td>
@@ -251,7 +251,7 @@ const AdminDashboard = () => {
         {/* Recent Clubs */}
         <div className="dashboard-section">
           <div className="section-header">
-            <h2>🏢 Recent Clubs</h2>
+            <h2><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{verticalAlign: 'middle', marginRight: '8px'}}><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/></svg>Recent Clubs</h2>
             <Link to="/clubs" className="view-all">View All →</Link>
           </div>
           {loading ? (
@@ -306,7 +306,7 @@ const AdminDashboard = () => {
         {/* Recent Events */}
         <div className="dashboard-section">
           <div className="section-header">
-            <h2>📅 Recent Events</h2>
+            <h2><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{verticalAlign: 'middle', marginRight: '8px'}}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Recent Events</h2>
             <Link to="/events" className="view-all">View All →</Link>
           </div>
           {loading ? (

@@ -643,6 +643,18 @@ class ClubService {
       throw err;
     }
 
+    // ✅ ENFORCE 3-CLUB LIMIT: Check if user already has 3 approved club memberships
+    const approvedMembershipsCount = await Membership.countDocuments({
+      user: userId,
+      status: 'approved'
+    });
+
+    if (approvedMembershipsCount >= 3) {
+      const err = new Error('This student is already a member of 3 clubs. Maximum club limit reached. Students cannot join more than 3 clubs.');
+      err.statusCode = 400;
+      throw err;
+    }
+
     // ✅ ACCESS CONTROL: Check who is adding the member
     const adderMembership = await Membership.findOne({ club: clubId, user: userContext.id });
     // Get the adder's user object to check their global role
@@ -1059,6 +1071,54 @@ class ClubService {
 
     await this.flushCache();
     return club;
+  }
+
+  /**
+   * Get public stats for homepage
+   */
+  async getPublicStats() {
+    try {
+      const { User } = require('../auth/user.model');
+      const { Event } = require('../event/event.model');
+      
+      console.log('📊 Fetching public stats...');
+      
+      // Get active clubs count
+      const activeClubs = await Club.countDocuments({ status: 'active' });
+      console.log('✅ Active clubs:', activeClubs);
+      
+      // Get total ALL users count (regardless of role)
+      const allUsers = await User.countDocuments({});
+      console.log('✅ All users in DB:', allUsers);
+      
+      // Get total unique students (all users with student role)
+      const totalStudents = await User.countDocuments({ 'roles.global': 'student' });
+      console.log('✅ Total students with student role:', totalStudents);
+      
+      // Alternative: Count unique students from approved memberships
+      const uniqueStudentsFromMemberships = await Membership.distinct('user', { status: 'approved' });
+      console.log('✅ Unique students from memberships:', uniqueStudentsFromMemberships.length);
+      
+      // Get total events count
+      const totalEvents = await Event.countDocuments();
+      console.log('✅ Total events:', totalEvents);
+      
+      // Use the higher count between direct user count and membership count
+      const finalStudentCount = Math.max(totalStudents, uniqueStudentsFromMemberships.length);
+      
+      const stats = {
+        activeClubs,
+        students: finalStudentCount,
+        events: totalEvents
+      };
+      
+      console.log('📊 Final stats:', stats);
+      return stats;
+    } catch (error) {
+      console.error('❌ Error in getPublicStats:', error);
+      console.error('❌ Stack trace:', error.stack);
+      throw error;
+    }
   }
 }
 

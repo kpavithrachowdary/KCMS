@@ -5,7 +5,7 @@ import Layout from '../../components/Layout';
 import clubService from '../../services/clubService';
 import eventService from '../../services/eventService';
 import { getClubLogoUrl, getClubLogoPlaceholder } from '../../utils/imageUtils';
-import { hasCoreMemberRole, ROLE_DISPLAY_NAMES } from '../../utils/roleConstants';
+import { hasCoreMemberRole, ROLE_DISPLAY_NAMES, LEADERSHIP_ROLES } from '../../utils/roleConstants';
 import '../../styles/Clubs.css';
 
 const ClubDetailPage = () => {
@@ -71,6 +71,11 @@ const ClubDetailPage = () => {
   const canManage = user?.roles?.global === 'admin' || 
                     isAssignedCoordinator ||
                     hasManagementRole;
+  
+  // ✅ Check if user has leadership role (for Edit Club button)
+  const userMembership = clubMemberships?.find(m => m.club?.toString() === clubId?.toString());
+  const userRole = userMembership?.role;
+  const canEdit = LEADERSHIP_ROLES.includes(userRole);
 
   return (
     <Layout>
@@ -114,14 +119,14 @@ const ClubDetailPage = () => {
 
               <div className="club-actions">
                 {canManage && (
-                  <>
-                    <Link to={`/clubs/${clubId}/dashboard`} className="btn btn-primary">
-                      📊 Dashboard
-                    </Link>
-                    <Link to={`/clubs/${clubId}/edit`} className="btn btn-secondary">
-                      ✏️ Edit Club
-                    </Link>
-                  </>
+                  <Link to={`/clubs/${clubId}/dashboard`} className="btn btn-primary">
+                    📊 Dashboard
+                  </Link>
+                )}
+                {canEdit && (
+                  <Link to={`/clubs/${clubId}/edit`} className="btn btn-secondary">
+                    ✏️ Edit Club
+                  </Link>
                 )}
                 <Link to="/recruitments" className="btn btn-outline">
                   View Recruitments

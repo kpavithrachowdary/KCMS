@@ -55,18 +55,23 @@ const ClubDashboard = () => {
   const fetchMemberAnalytics = async () => {
     try {
       const response = await analyticsService.getMemberAnalytics(clubId);
-      // Backend: successResponse(res, { members, total }) → { status, data: { members, total } }
-      const analyticsData = response.data?.members || [];
+      // ✅ FIX: Backend returns { status, data: { members, total } }
+      const analyticsData = response.data?.data?.members || response.data?.members || [];
       
       if (!Array.isArray(analyticsData)) {
         console.warn('Analytics data is not an array:', analyticsData);
         return;
       }
       
-      const activeCount = analyticsData.filter(m => m.isActive).length;
-      const inactiveCount = analyticsData.length - activeCount;
+      // ✅ FIX: Backend returns activityStatus, not isActive
+      const activeCount = analyticsData.filter(m => 
+        m.stats?.activityStatus === 'active' || m.stats?.activityStatus === 'very_active'
+      ).length;
+      const inactiveCount = analyticsData.filter(m => 
+        m.stats?.activityStatus === 'inactive'
+      ).length;
       const avgEvents = analyticsData.length > 0 
-        ? (analyticsData.reduce((sum, m) => sum + (m.stats?.total || 0), 0) / analyticsData.length).toFixed(1)
+        ? (analyticsData.reduce((sum, m) => sum + (m.stats?.presentEvents || 0), 0) / analyticsData.length).toFixed(1)
         : 0;
       
       setMemberAnalytics({
@@ -368,8 +373,8 @@ const ClubDashboard = () => {
             </div>
           </div>
           <div className="header-actions">
-            {/* ✅ Edit Club button - Only for Admin or Leadership (NOT coordinators) */}
-            {(user?.roles?.global === 'admin' || LEADERSHIP_ROLES.includes(userRole)) && (
+            {/* ✅ Edit Club button - Only for Leadership (President/Vice President) */}
+            {LEADERSHIP_ROLES.includes(userRole) && (
               <Link to={`/clubs/${clubId}/edit`} className="btn btn-outline">
                 ⚙️ Edit Club
               </Link>

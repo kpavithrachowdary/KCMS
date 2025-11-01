@@ -58,11 +58,14 @@ const ResetPasswordPage = () => {
     setLoading(true);
 
     try {
-      await authService.resetPassword({
+      const payload = {
         identifier,
         otp: formData.otp,
         newPassword: formData.newPassword,
-      });
+        confirmPassword: formData.confirmPassword,
+      };
+      console.log('🔐 Reset password payload:', { ...payload, newPassword: '***', confirmPassword: '***' });
+      await authService.resetPassword(payload);
       sessionStorage.removeItem('resetIdentifier'); // Clean up
       alert('Password reset successful! Please login with your new password.');
       navigate('/login');

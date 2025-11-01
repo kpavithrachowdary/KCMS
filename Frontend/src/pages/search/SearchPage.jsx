@@ -12,36 +12,12 @@ function SearchPage() {
   const [results, setResults] = useState({ clubs: [], events: [], users: [], documents: [] });
   const [activeTab, setActiveTab] = useState('all');
   const [loading, setLoading] = useState(false);
-  const [recommendations, setRecommendations] = useState([]);
-  const [loadingRecs, setLoadingRecs] = useState(false);
 
   useEffect(() => {
     if (query.trim()) {
       performSearch();
     }
   }, [query]);
-
-  useEffect(() => {
-    // Only fetch recommendations for students, not for coordinators or admins
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const isStudent = user?.roles?.global === 'student';
-    
-    if (isStudent) {
-      fetchRecommendations();
-    }
-  }, []);
-
-  const fetchRecommendations = async () => {
-    try {
-      setLoadingRecs(true);
-      const response = await searchService.getClubRecommendations();
-      setRecommendations(response.data?.recommendations || []);
-    } catch (err) {
-      console.error('Error fetching recommendations:', err);
-    } finally {
-      setLoadingRecs(false);
-    }
-  };
 
   const performSearch = async () => {
     try {
@@ -89,49 +65,6 @@ function SearchPage() {
             </button>
           </form>
         </div>
-
-        {!query && (
-          <div className="recommendations-section">
-            <h2>💡 Recommended for You</h2>
-            <p className="recommendations-subtitle">
-              Discover clubs based on your interests and department
-            </p>
-            
-            {loadingRecs ? (
-              <div className="loading">Loading recommendations...</div>
-            ) : recommendations.length === 0 ? (
-              <div className="empty-state">
-                <p>No recommendations available yet</p>
-                <p className="hint">Join some clubs to get personalized recommendations!</p>
-              </div>
-            ) : (
-              <div className="results-grid">
-                {recommendations.map((rec) => (
-                  <div 
-                    key={rec.club._id} 
-                    className="result-card recommendation-card"
-                    onClick={() => navigate(`/clubs/${rec.club._id}`)}
-                  >
-                    <div className="rec-badge">{rec.type}</div>
-                    <h3>{rec.club.name}</h3>
-                    <p className="category">{rec.club.category}</p>
-                    <p className="reason">{rec.reason}</p>
-                    <p className="description">
-                      {rec.club.description?.substring(0, 120)}
-                      {rec.club.description?.length > 120 ? '...' : ''}
-                    </p>
-                    <button className="btn-explore" onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/clubs/${rec.club._id}`);
-                    }}>
-                      Explore →
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
 
         {query && (
           <>

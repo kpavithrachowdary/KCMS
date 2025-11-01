@@ -19,10 +19,11 @@ const MemberActivityDetailPage = () => {
     try {
       setLoading(true);
       const response = await analyticsService.getMemberActivity(clubId, memberId);
-      setData(response.data?.data || response.data);
+      const activityData = response.data?.data || response.data;
+      setData(activityData);
     } catch (err) {
       console.error('Failed to fetch member activity:', err);
-      alert('Failed to load member activity');
+      alert('Failed to load member activity: ' + (err.response?.data?.message || err.message));
     } finally {
       setLoading(false);
     }
@@ -36,70 +37,185 @@ const MemberActivityDetailPage = () => {
     );
   }
 
-  if (!data || !data.member) {
+  if (!data) {
     return (
       <Layout>
-        <div className="error">Member not found</div>
+        <div className="error">No data received from server</div>
       </Layout>
     );
   }
 
-  const member = data.member;
+  if (!data.member) {
+    return (
+      <Layout>
+        <div className="error">
+          <h3>Member not found</h3>
+          <p>Data structure: {JSON.stringify(Object.keys(data))}</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  const member = data.member || {};
   const stats = data.stats || {};
-  const events = data.events || [];
-  const club = data.club || {};
+  const events = data.eventHistory || [];
 
   return (
     <Layout>
-      <div className="member-activity-detail-page">
-        <div className="page-header">
-          <button onClick={() => navigate(`/clubs/${clubId}/member-analytics`)} className="back-btn">
+      <div className="member-activity-detail-page" style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+        <div className="page-header" style={{ marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row' }}>
+          <h1 style={{ fontSize: '28px', fontWeight: '600', color: '#1a1a1a', margin: '0', order: 1 }}>Member Activity Details</h1>
+          <button 
+            onClick={() => navigate(`/clubs/${clubId}/member-analytics`)} 
+            className="back-btn"
+            style={{
+              background: '#9ebedeff',
+              color: 'white',
+              border: 'none',
+              padding: '10px 20px',
+              borderRadius: '6px',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              transition: 'background 0.2s',
+              order: 2,
+              marginLeft: '1000px'
+            }}
+            onMouseEnter={(e) => e.target.style.background = '#0052a3'}
+            onMouseLeave={(e) => e.target.style.background = '#0066cc'}
+          >
             ← Back to Analytics
           </button>
-          <h1>Member Activity Details</h1>
         </div>
 
-        <div className="member-profile">
-          <div className="profile-card">
+        <div className="member-profile" style={{ marginBottom: '30px' }}>
+          <div className="profile-card" style={{ 
+            padding: '30px', 
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+            borderRadius: '12px',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+          }}>
             <div className="profile-info">
-              <h2>{member.name}</h2>
-              <p className="roll-number">{member.rollNumber}</p>
-              <p className="department">{member.department}</p>
-              <p className="club-role">{data.role || 'Member'} at {club.name}</p>
+              <h2 style={{ color: '#fff', fontSize: '28px', marginBottom: '15px', fontWeight: '600' }}>{member.name}</h2>
+              <p className="roll-number" style={{ color: 'rgba(255,255,255,0.9)', fontSize: '16px', margin: '8px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '18px' }}>📋</span> {member.rollNumber}
+              </p>
+              <p className="email" style={{ color: 'rgba(255,255,255,0.9)', fontSize: '14px', margin: '8px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '18px' }}>📧</span> {member.email}
+              </p>
+              <p className="club-role" style={{ 
+                color: '#fff', 
+                fontSize: '15px', 
+                fontWeight: '600', 
+                margin: '15px 0 0 0',
+                padding: '8px 16px',
+                background: 'rgba(255,255,255,0.2)',
+                borderRadius: '20px',
+                display: 'inline-block'
+              }}>
+                🎯 Role: {member.clubRole || 'Member'}
+              </p>
             </div>
           </div>
         </div>
 
-        <div className="activity-summary">
-          <div className="summary-card">
-            <div className="summary-icon">📊</div>
+        <div className="activity-summary" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '30px' }}>
+          <div className="summary-card" style={{ 
+            background: '#fff', 
+            padding: '24px', 
+            borderRadius: '12px', 
+            border: 'none',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            textAlign: 'center',
+            transition: 'transform 0.2s, box-shadow 0.2s'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-4px)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+          }}>
+            <div className="summary-icon" style={{ fontSize: '40px', marginBottom: '12px' }}>📊</div>
             <div className="summary-content">
-              <p className="summary-label">Total Events</p>
-              <p className="summary-value">{stats.total || 0}</p>
+              <p className="summary-label" style={{ color: '#888', fontSize: '13px', fontWeight: '500', margin: '0 0 8px 0', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Events</p>
+              <p className="summary-value" style={{ color: '#1a1a1a', fontSize: '32px', fontWeight: '700', margin: '0' }}>{stats.totalEvents || 0}</p>
             </div>
           </div>
           
-          <div className="summary-card">
-            <div className="summary-icon">🎯</div>
+          <div className="summary-card" style={{ 
+            background: '#fff', 
+            padding: '24px', 
+            borderRadius: '12px', 
+            border: 'none',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            textAlign: 'center',
+            transition: 'transform 0.2s, box-shadow 0.2s'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-4px)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+          }}>
+            <div className="summary-icon" style={{ fontSize: '40px', marginBottom: '12px' }}>🎯</div>
             <div className="summary-content">
-              <p className="summary-label">As Organizer</p>
-              <p className="summary-value">{stats.organized || 0}</p>
+              <p className="summary-label" style={{ color: '#888', fontSize: '13px', fontWeight: '500', margin: '0 0 8px 0', textTransform: 'uppercase', letterSpacing: '0.5px' }}>As Organizer</p>
+              <p className="summary-value" style={{ color: '#1a1a1a', fontSize: '32px', fontWeight: '700', margin: '0' }}>{stats.organizerEvents || 0}</p>
             </div>
           </div>
           
-          <div className="summary-card">
-            <div className="summary-icon">🤝</div>
+          <div className="summary-card" style={{ 
+            background: '#fff', 
+            padding: '24px', 
+            borderRadius: '12px', 
+            border: 'none',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            textAlign: 'center',
+            transition: 'transform 0.2s, box-shadow 0.2s'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-4px)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+          }}>
+            <div className="summary-icon" style={{ fontSize: '40px', marginBottom: '12px' }}>🤝</div>
             <div className="summary-content">
-              <p className="summary-label">As Volunteer</p>
-              <p className="summary-value">{stats.volunteered || 0}</p>
+              <p className="summary-label" style={{ color: '#888', fontSize: '13px', fontWeight: '500', margin: '0 0 8px 0', textTransform: 'uppercase', letterSpacing: '0.5px' }}>As Volunteer</p>
+              <p className="summary-value" style={{ color: '#1a1a1a', fontSize: '32px', fontWeight: '700', margin: '0' }}>{stats.volunteerEvents || 0}</p>
             </div>
           </div>
           
-          <div className="summary-card">
-            <div className="summary-icon">✅</div>
+          <div className="summary-card" style={{ 
+            background: '#fff', 
+            padding: '24px', 
+            borderRadius: '12px', 
+            border: 'none',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            textAlign: 'center',
+            transition: 'transform 0.2s, box-shadow 0.2s'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-4px)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+          }}>
+            <div className="summary-icon" style={{ fontSize: '40px', marginBottom: '12px' }}>✅</div>
             <div className="summary-content">
-              <p className="summary-label">Attendance Rate</p>
-              <p className="summary-value">{stats.attendanceRate || 0}%</p>
+              <p className="summary-label" style={{ color: '#888', fontSize: '13px', fontWeight: '500', margin: '0 0 8px 0', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Attendance Rate</p>
+              <p className="summary-value" style={{ color: '#10b981', fontSize: '32px', fontWeight: '700', margin: '0' }}>{stats.participationRate || 0}%</p>
             </div>
           </div>
         </div>
@@ -128,43 +244,40 @@ const MemberActivityDetailPage = () => {
                 </thead>
                 <tbody>
                   {events.map((evt) => {
-                    const event = evt.event || evt;
-                    const attendance = evt.attendance || {};
-                    
                     return (
-                      <tr key={evt._id || event._id}>
+                      <tr key={evt.eventId}>
                         <td>
                           <div className="event-cell">
-                            <p className="event-title">{event.title}</p>
-                            <p className="event-club">{event.club?.name || club.name}</p>
+                            <p className="event-title">{evt.title}</p>
+                            <p className="event-venue">{evt.venue || 'TBA'}</p>
                           </div>
                         </td>
                         <td className="date-cell">
-                          {new Date(event.dateTime).toLocaleDateString('en-US', {
+                          {new Date(evt.date).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
                             year: 'numeric'
                           })}
                         </td>
                         <td>
-                          <span className={`role-badge role-${attendance.type || evt.participationType}`}>
-                            {attendance.type === 'organizer' || evt.participationType === 'organizer' 
+                          <span className={`role-badge role-${evt.role}`}>
+                            {evt.role === 'organizer' 
                               ? '🎯 Organizer' 
                               : '🤝 Volunteer'}
                           </span>
                         </td>
                         <td>
-                          {attendance.status === 'present' || evt.attended ? (
+                          {evt.attended ? (
                             <span className="attendance-badge present">✅ Present</span>
-                          ) : attendance.status === 'absent' ? (
+                          ) : evt.attendanceStatus === 'absent' ? (
                             <span className="attendance-badge absent">❌ Absent</span>
                           ) : (
                             <span className="attendance-badge pending">⏳ Pending</span>
                           )}
                         </td>
                         <td>
-                          <span className={`event-status-badge status-${event.status}`}>
-                            {event.status}
+                          <span className={`event-status-badge status-${evt.status}`}>
+                            {evt.status}
                           </span>
                         </td>
                       </tr>
@@ -181,27 +294,22 @@ const MemberActivityDetailPage = () => {
           {events.length > 0 ? (
             <div className="timeline">
               {events.slice(0, 5).map((evt, index) => {
-                const event = evt.event || evt;
-                const attendance = evt.attendance || {};
-                
                 return (
                   <div key={index} className="timeline-item">
                     <div className="timeline-marker">
-                      {attendance.status === 'present' || evt.attended ? '✅' : '⏳'}
+                      {evt.attended ? '✅' : '⏳'}
                     </div>
                     <div className="timeline-content">
                       <p className="timeline-date">
-                        {new Date(event.dateTime).toLocaleDateString('en-US', {
+                        {new Date(evt.date).toLocaleDateString('en-US', {
                           month: 'short',
                           day: 'numeric',
                           year: 'numeric'
                         })}
                       </p>
-                      <p className="timeline-title">{event.title}</p>
+                      <p className="timeline-title">{evt.title}</p>
                       <p className="timeline-role">
-                        {attendance.type === 'organizer' || evt.participationType === 'organizer'
-                          ? 'Organizer'
-                          : 'Volunteer'}
+                        {evt.role === 'organizer' ? 'Organizer' : 'Volunteer'}
                       </p>
                     </div>
                   </div>

@@ -160,7 +160,7 @@ function ReportsPage() {
     }
   };
 
-  const downloadClubActivityExcel = async () => {
+  const downloadClubActivityCSV = async () => {
     if (!selectedClub) {
       alert('Please select a club');
       return;
@@ -168,17 +168,22 @@ function ReportsPage() {
 
     try {
       setLoading(true);
-      const response = await reportService.getClubActivity({ 
-        clubId: selectedClub,
-        year: clubActivityYear,
-        format: 'excel' 
+      console.log('📥 Exporting Club Activity CSV via export route:', { clubId: selectedClub, year: clubActivityYear });
+
+      // Use the dedicated export route for parity with Club Dashboard
+      const response = await reportService.exportClubActivityCSV(selectedClub, clubActivityYear);
+
+      console.log('📄 CSV Response received:', {
+        type: response.data.type,
+        size: response.data.size
       });
 
-      reportService.downloadBlob(response.data, `club-activity-${clubActivityYear}.xlsx`);
-      alert('Excel report downloaded successfully!');
+      reportService.downloadBlob(response.data, `club-activity-${clubActivityYear}.csv`);
+      alert('✅ CSV report downloaded successfully!');
     } catch (err) {
-      console.error('Error downloading Excel:', err);
-      alert('Failed to download Excel report');
+      console.error('❌ Error downloading CSV:', err);
+      const errorMsg = err.response?.data?.message || err.message || 'Failed to download CSV report';
+      alert(`Failed to download CSV: ${errorMsg}`);
     } finally {
       setLoading(false);
     }
@@ -352,10 +357,10 @@ function ReportsPage() {
                 </button>
                 <button
                   className="btn btn-secondary"
-                  onClick={downloadClubActivityExcel}
-                  disabled={loading}
+                  onClick={downloadClubActivityCSV}
+                  disabled={loading || !selectedClub}
                 >
-                  <FaFileDownload /> Download Excel
+                  <FaFileDownload /> Download CSV
                 </button>
               </div>
             </div>

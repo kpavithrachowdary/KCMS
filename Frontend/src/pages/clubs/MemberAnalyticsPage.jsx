@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import analyticsService from '../../services/analyticsService';
 import clubService from '../../services/clubService';
 import reportService from '../../services/reportService';
@@ -9,6 +10,7 @@ import './MemberAnalyticsPage.css';
 const MemberAnalyticsPage = () => {
   const { clubId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   const [club, setClub] = useState(null);
   const [members, setMembers] = useState([]);
@@ -26,16 +28,16 @@ const MemberAnalyticsPage = () => {
       setLoading(true);
       
       // Fetch club details
-      const clubResponse = await clubService.getById(clubId);
-      setClub(clubResponse.data?.data?.club || clubResponse.data?.club);
+      const clubResponse = await clubService.getClub(clubId);
+      setClub(clubResponse.data?.club || clubResponse.club);
       
-      // Fetch member analytics
+      // Fetch member analytics - Backend returns { status, data: { members, total } }
       const analyticsResponse = await analyticsService.getMemberAnalytics(clubId, filter);
-      const analyticsData = analyticsResponse.data?.data || analyticsResponse.data || [];
+      const analyticsData = analyticsResponse.data?.data?.members || analyticsResponse.data?.members || [];
       setMembers(analyticsData);
     } catch (err) {
       console.error('Failed to fetch analytics:', err);
-      alert('Failed to load member analytics');
+      alert('Failed to load member analytics. Please check console for details.');
     } finally {
       setLoading(false);
     }
@@ -69,17 +71,17 @@ const MemberAnalyticsPage = () => {
   // Filter and search
   const filteredMembers = members
     .filter(m => {
-      const name = m.member?.name || m.user?.name || '';
-      const roll = m.member?.rollNumber || m.user?.rollNumber || '';
+      const name = m.name || '';
+      const roll = m.rollNumber || '';
       return name.toLowerCase().includes(searchTerm.toLowerCase()) ||
              roll.toLowerCase().includes(searchTerm.toLowerCase());
     })
     .sort((a, b) => {
       switch (sortBy) {
         case 'total':
-          return (b.stats?.total || 0) - (a.stats?.total || 0);
+          return (b.stats?.presentEvents || 0) - (a.stats?.presentEvents || 0);
         case 'rate':
-          return (b.stats?.attendanceRate || 0) - (a.stats?.attendanceRate || 0);
+          return (b.stats?.participationRate || 0) - (a.stats?.participationRate || 0);
         case 'lastActive':
           return new Date(b.lastActive || 0) - new Date(a.lastActive || 0);
         default:
@@ -89,10 +91,12 @@ const MemberAnalyticsPage = () => {
 
   // Calculate summary stats
   const totalMembers = members.length;
-  const activeMembers = members.filter(m => m.isActive).length;
+  const activeMembers = members.filter(m => 
+    m.stats?.activityStatus === 'active' || m.stats?.activityStatus === 'very_active'
+  ).length;
   const inactiveMembers = totalMembers - activeMembers;
   const avgEvents = totalMembers > 0 
-    ? (members.reduce((sum, m) => sum + (m.stats?.total || 0), 0) / totalMembers).toFixed(1)
+    ? (members.reduce((sum, m) => sum + (m.stats?.presentEvents || 0), 0) / totalMembers).toFixed(1)
     : 0;
 
   if (loading) {
@@ -205,31 +209,30 @@ const MemberAnalyticsPage = () => {
               </thead>
               <tbody>
                 {filteredMembers.map((memberData) => {
-                  const member = memberData.member || memberData.user || {};
                   const stats = memberData.stats || {};
-                  const isActive = memberData.isActive;
+                  const activityStatus = stats.activityStatus || 'inactive';
                   
                   return (
-                    <tr key={member._id} className={isActive ? '' : 'inactive-row'}>
+                    <tr key={memberData.userId} className={activityStatus === 'inactive' ? 'inactive-row' : ''}>
                       <td>
                         <div className="member-cell">
                           <div className="member-info">
-                            <p className="member-name">{member.name}</p>
-                            <p className="member-roll">{member.rollNumber}</p>
+                            <p className="member-name">{memberData.name}</p>
+                            <p className="member-roll">{memberData.rollNumber}</p>
                           </div>
                         </div>
                       </td>
                       <td>
-                        <span className="role-badge">{memberData.role || 'Member'}</span>
+                        <span className="role-badge">{memberData.clubRole || 'Member'}</span>
                       </td>
-                      <td className="number-cell">{stats.organized || 0}</td>
-                      <td className="number-cell">{stats.volunteered || 0}</td>
+                      <td className="number-cell">{stats.organizerEvents || 0}</td>
+                      <td className="number-cell">{stats.volunteerEvents || 0}</td>
                       <td className="number-cell">
-                        <strong>{stats.total || 0}</strong>
+                        <strong>{stats.presentEvents || 0}</strong>
                       </td>
                       <td>
-                        <span className={`rate-badge ${stats.attendanceRate >= 75 ? 'rate-good' : stats.attendanceRate >= 50 ? 'rate-medium' : 'rate-poor'}`}>
-                          {stats.attendanceRate || 0}%
+                        <span className={`rate-badge ${stats.participationRate >= 75 ? 'rate-good' : stats.participationRate >= 50 ? 'rate-medium' : 'rate-poor'}`}>
+                          {stats.participationRate || 0}%
                         </span>
                       </td>
                       <td className="date-cell">
@@ -238,23 +241,30 @@ const MemberAnalyticsPage = () => {
                           : 'Never'}
                       </td>
                       <td>
-                        {isActive ? (
-                          <span className="status-badge active">Active</span>
-                        ) : (
+                        {activityStatus === 'very_active' && (
+                          <span className="status-badge active" style={{ background: '#10b981' }}>⭐ Very Active</span>
+                        )}
+                        {activityStatus === 'active' && (
+                          <span className="status-badge active">✅ Active</span>
+                        )}
+                        {activityStatus === 'moderate' && (
+                          <span className="status-badge" style={{ background: '#f59e0b', color: 'white' }}>🟡 Moderate</span>
+                        )}
+                        {activityStatus === 'inactive' && (
                           <span className="status-badge inactive">Inactive</span>
                         )}
                       </td>
                       <td>
                         <div className="action-buttons">
                           <button
-                            onClick={() => navigate(`/clubs/${clubId}/members/${member._id}/activity`)}
+                            onClick={() => navigate(`/clubs/${clubId}/members/${memberData.userId}/activity`)}
                             className="btn-view"
                           >
                             View Details
                           </button>
-                          {!isActive && stats.total === 0 && (
+                          {activityStatus === 'inactive' && stats.presentEvents === 0 && (
                             <button
-                              onClick={() => handleRemoveMember(member._id)}
+                              onClick={() => handleRemoveMember(memberData.userId)}
                               className="btn-remove"
                             >
                               Remove

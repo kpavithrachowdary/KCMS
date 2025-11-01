@@ -468,7 +468,108 @@ class ReportService {
   }
 
   /**
-   * Export Club Activity Report as CSV
+   * Generate Club Activity Report as CSV (comprehensive version)
+   */
+  async generateClubActivityCSV({ clubId, year }) {
+    const club = await Club.findById(clubId).populate('coordinator', 'profile.name');
+    if (!club) {
+      const err = new Error('Club not found');
+      err.statusCode = 404;
+      throw err;
+    }
+
+    // Parse year as integer
+    const parsedYear = parseInt(year) || new Date().getFullYear();
+    console.log('📅 Generating CSV for year:', parsedYear);
+
+    const startDate = new Date(parsedYear, 0, 1);
+    const endDate = new Date(parsedYear + 1, 0, 1);
+
+    const [events, members, budgetRequests] = await Promise.all([
+      Event.find({ 
+        club: clubId, 
+        dateTime: { $gte: startDate, $lt: endDate } 
+      }).lean(),
+      
+      Membership.find({ 
+        club: clubId, 
+        status: 'approved' 
+      }).populate('user', 'profile.name rollNumber').lean(),
+      
+      BudgetRequest.find({
+        event: { $in: await Event.find({ club: clubId }).distinct('_id') },
+        createdAt: { $gte: startDate, $lt: endDate }
+      }).populate('event', 'title').lean()
+    ]);
+
+    // Build CSV manually for proper formatting
+    const csvRows = [];
+    
+    // Helper function to escape CSV values
+    const escapeCSV = (value) => {
+      if (value === null || value === undefined) return '';
+      const str = String(value);
+      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
+
+    // Club Information Section
+    csvRows.push(`${club.name} - Activity Report ${parsedYear}`);
+    csvRows.push('');
+    csvRows.push('Club Information');
+    csvRows.push(`Club Name,${escapeCSV(club.name)}`);
+    csvRows.push(`Category,${escapeCSV(club.category)}`);
+    csvRows.push(`Coordinator,${escapeCSV(club.coordinator?.profile?.name || 'N/A')}`);
+    csvRows.push(`Total Members,${members.length}`);
+    csvRows.push(`Total Events,${events.length}`);
+    csvRows.push(`Total Budget,₹${budgetRequests.reduce((sum, br) => sum + (br.amount || 0), 0)}`);
+    csvRows.push('');
+    
+    // Events Section
+    csvRows.push('Events List');
+    csvRows.push('Event Title,Date,Status,Venue,Expected Attendees,Budget');
+    
+    events.forEach(event => {
+      csvRows.push([
+        escapeCSV(event.title),
+        escapeCSV(new Date(event.dateTime).toLocaleDateString()),
+        escapeCSV(event.status),
+        escapeCSV(event.venue || 'N/A'),
+        event.expectedAttendees || 0,
+        event.budget ? `₹${event.budget}` : 'N/A'
+      ].join(','));
+    });
+    
+    if (events.length === 0) {
+      csvRows.push('No events found for this period');
+    }
+    
+    csvRows.push('');
+    
+    // Budget Requests Section
+    if (budgetRequests.length > 0) {
+      csvRows.push('Budget Requests');
+      csvRows.push('Event,Amount,Status');
+      
+      budgetRequests.forEach(br => {
+        csvRows.push([
+          escapeCSV(br.event?.title || 'Unknown Event'),
+          `₹${br.amount}`,
+          escapeCSV(br.status)
+        ].join(','));
+      });
+    }
+    
+    csvRows.push('');
+    csvRows.push(`Report Generated: ${new Date().toLocaleString()}`);
+    
+    return csvRows.join('\n');
+  }
+
+  /**
+   * Export Club Activity Report as CSV (simplified version)
    */
   async exportClubActivityCSV({ clubId, year }) {
     const club = await Club.findById(clubId).populate('coordinator', 'profile.name');

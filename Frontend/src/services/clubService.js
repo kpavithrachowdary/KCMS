@@ -108,6 +108,12 @@ const clubService = {
     const response = await api.patch(`/clubs/${clubId}/members/${memberId}`, { status: 'rejected' });
     return response.data;
   },
+
+  // Get Public Stats for Homepage (no auth required)
+  getPublicStats: async () => {
+    const response = await api.get('/clubs/public/stats');
+    return response.data;
+  },
 };
 
 export default clubService;

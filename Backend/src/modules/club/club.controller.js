@@ -212,3 +212,13 @@ exports.uploadBanner = async (req, res, next) => {
     next(err);
   }
 };
+
+// Get public stats for homepage (no auth required)
+exports.getPublicStats = async (req, res, next) => {
+  try {
+    const stats = await clubService.getPublicStats();
+    successResponse(res, stats);
+  } catch (err) {
+    next(err);
+  }
+};

@@ -12,18 +12,41 @@ exports.clubActivity = async (req, res, next) => {
   try {
     const { format, ...queryParams } = req.query;
     
-    // If Excel format requested, generate Excel file
-    if (format === 'excel') {
-      const excelBuffer = await svc.generateClubActivityExcel(queryParams);
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', 'attachment; filename="club-activity-report.xlsx"');
-      return res.send(excelBuffer);
+    console.log('📊 Club Activity Request - Full Query:', req.query);
+    console.log('📊 Extracted format:', format, 'Type:', typeof format);
+    console.log('📊 Query params:', queryParams);
+    
+    // Validate clubId is provided
+    if (!queryParams.clubId) {
+      const err = new Error('Club ID is required');
+      err.statusCode = 400;
+      throw err;
     }
     
+    // If CSV format requested, generate CSV file
+    if (format === 'csv') {
+      console.log('✅ CSV FORMAT DETECTED - Generating CSV for club:', queryParams.clubId);
+      const csvData = await svc.generateClubActivityCSV(queryParams);
+      console.log('✅ CSV generated successfully, length:', csvData.length);
+      console.log('✅ First 200 chars:', csvData.substring(0, 200));
+      
+      // Add UTF-8 BOM for proper Excel encoding
+      const csvWithBOM = '\uFEFF' + csvData;
+      
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', 'attachment; filename="club-activity-report.csv"');
+      console.log('✅ Sending CSV response...');
+      return res.send(csvWithBOM);
+    }
+    
+    console.log('⚠️  CSV format NOT detected - Returning JSON data');
     // Otherwise return JSON data
     const data = await svc.clubActivity(queryParams);
     successResponse(res, { report: data });
-  } catch (err) { next(err); }
+  } catch (err) { 
+    console.error('❌ Error in clubActivity controller:', err);
+    next(err); 
+  }
 };
 
 exports.naacNba = async (req, res, next) => {

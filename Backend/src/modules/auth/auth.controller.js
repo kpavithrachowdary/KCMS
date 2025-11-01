@@ -121,6 +121,12 @@ exports.verifyReset = async (req, res, next) => {
 
 exports.resetPassword = async (req, res, next) => {
   try {
+    console.log('🔐 Reset password request body:', {
+      identifier: req.body.identifier,
+      otp: req.body.otp,
+      hasNewPassword: !!req.body.newPassword,
+      hasConfirmPassword: !!req.body.confirmPassword
+    });
     await authSvc.resetPassword(req.body, {
       id: null,
       ip: req.ip,

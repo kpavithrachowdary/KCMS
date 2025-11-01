@@ -31,6 +31,9 @@ router.post(
   ctrl.createClub
 );
 
+// PUBLIC: Get platform stats for homepage (no auth required) - MUST BE BEFORE OTHER ROUTES
+router.get('/public/stats', ctrl.getPublicStats);
+
 // List Active Clubs (Public - Section 3.2)
 router.get(
   '/',

@@ -70,29 +70,40 @@ cron.schedule('0 * * * *', async () => {
 // ========================================
 // JOB 2: Move to Pending Completion
 // Runs every hour at :30
-// Changes 'ongoing' → 'pending_completion' 24hrs after event
+// Changes 'ongoing' → 'pending_completion' after event ends (dateTime + duration)
 // ========================================
 cron.schedule('30 * * * *', async () => { // TESTING: Every minute (change back to '30 * * * *' after testing)
   try {
     console.log('🔄 [Cron Job 2] Checking events to move to pending_completion...');
     
     const now = new Date();
-    // ✅ PRODUCTION MODE: Only move to pending_completion 24hrs after event
-    const oneDayAgo = new Date(now - 24 * 60 * 60 * 1000);
     
+    // ✅ FIX: Get all ongoing events and check if they've ended (dateTime + duration)
     const events = await Event.find({
-      status: 'ongoing',
-      dateTime: { $lt: oneDayAgo } // Event was more than 24 hours ago
+      status: 'ongoing'
     }).populate('club');
     
     if (events.length === 0) {
-      console.log('   ℹ️  No events to move to pending_completion');
+      console.log('   ℹ️  No ongoing events found');
       return;
     }
     
+    let movedCount = 0;
+    
     for (const event of events) {
+      // Calculate event end time: dateTime + duration (convert minutes to ms)
+      const eventDurationMs = (event.duration || 0) * 60 * 1000;
+      const eventEndTime = new Date(event.dateTime.getTime() + eventDurationMs);
+      
+      // Only move to pending_completion if event has ended
+      if (now < eventEndTime) {
+        console.log(`   ⏸️  Event "${event.title}" still ongoing (ends at ${eventEndTime.toLocaleString()})`);
+        continue; // Skip this event
+      }
+      
       event.status = 'pending_completion';
       event.completionDeadline = new Date(event.dateTime.getTime() + 7 * 24 * 60 * 60 * 1000);
+      movedCount++;
       
       // Check current completion status
       event.completionChecklist = {
@@ -143,7 +154,7 @@ cron.schedule('30 * * * *', async () => { // TESTING: Every minute (change back 
       }
     }
     
-    console.log(`   ✅ [Job 2] Completed - ${events.length} event(s) moved to pending_completion`);
+    console.log(`   ✅ [Job 2] Completed - ${movedCount} event(s) moved to pending_completion (${events.length} ongoing events checked)`);
   } catch (error) {
     console.error('   ❌ [Job 2] Error:', error.message);
   }
